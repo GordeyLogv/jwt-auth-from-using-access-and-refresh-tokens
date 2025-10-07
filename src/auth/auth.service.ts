@@ -10,15 +10,18 @@ import { AuthLoginDtoRequest } from './dto/auth.login.dto';
 import { PersonEntity } from './entity/person.entity';
 import { AuthRegisterDtoRequest } from './dto/auth.register.dto';
 import { AuthRegisterDtoResponse } from './dto/auth.register.response.dto';
+import { JwtService } from 'src/common/jwtService/jwt.service';
+import { AuthLoginDtoResponse } from './dto/auth.login.response.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  public async login(dto: AuthLoginDtoRequest): Promise<string> {
+  public async login(dto: AuthLoginDtoRequest): Promise<AuthLoginDtoResponse> {
     const existedPerson = await this.authRepository.getByEmail(dto.email);
 
     if (!existedPerson) {
@@ -31,7 +34,16 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    return 'Вход выполнен успешно';
+    const accessToken = this.jwtService.generateAccessToken(
+      existedPerson.toResponse(),
+    );
+    const refreshToken = this.jwtService.generateRefreshToken(
+      existedPerson.toResponse(),
+    );
+
+    await this.authRepository.updateRefreshToken(dto.email, refreshToken);
+
+    return { accessToken };
   }
 
   public async register(
@@ -39,20 +51,30 @@ export class AuthService {
   ): Promise<AuthRegisterDtoResponse> {
     const existedPerson = await this.authRepository.getByEmail(dto.email);
 
+    console.log(1);
+
     if (existedPerson) {
       throw new ConflictException('Person with this email already exists');
     }
 
+    console.log(2);
+
     const { password, ...dataToCreatePerson } = dto;
 
     const newPerson = PersonEntity.createNewPerson(dataToCreatePerson);
+
+    console.log(3);
 
     await newPerson.setHashPassword(
       password,
       Number.parseInt(this.configService.getOrThrow<string>('SALT')),
     );
 
+    console.log(newPerson);
+
     const createdPerson = await this.authRepository.create(newPerson);
+
+    console.log(5);
 
     return createdPerson.toResponse();
   }

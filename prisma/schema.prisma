@@ -13,6 +13,7 @@ model Person {
   age          Int
   email        String    @unique
   hashPassword String    @map("hash_password")
+  refreshToken String?   @map("refresh_token")
   createdAt    DateTime  @map("created_at")
   updatedAt    DateTime? @map("updated_at")
 

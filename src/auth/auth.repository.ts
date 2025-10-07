@@ -30,6 +30,18 @@ export class AuthRepository implements IAuthRepository {
     return this.toEntity(createdPerson);
   }
 
+  public async updateRefreshToken(
+    email: string,
+    refreshToken: string,
+  ): Promise<boolean> {
+    const updatedPerson = await this.databaseService.person.update({
+      where: { email },
+      data: { refreshToken },
+    });
+
+    return updatedPerson ? true : false;
+  }
+
   private toEntity(row: Person): PersonEntity {
     return PersonEntity.createPersonFromDb(row);
   }
