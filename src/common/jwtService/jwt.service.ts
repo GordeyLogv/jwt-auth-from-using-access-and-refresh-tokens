@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthRegisterDtoResponse } from 'src/auth/dto/auth.register.response.dto';
 import { sign } from 'jsonwebtoken';
+import { verifyJwt } from './util/jwt.wrapper';
+import { IJwtVerifyPayload } from './interface/jwt.verify.payload.interface';
 
 @Injectable()
 export class JwtService {
@@ -36,5 +38,25 @@ export class JwtService {
     return sign(payload, this.refreshTokenSecret, {
       expiresIn: this.refreshTokenExpiresInSecond,
     });
+  }
+
+  public verifyAccessToken<T extends IJwtVerifyPayload>(
+    token: string,
+  ): T | null {
+    const decodedData = verifyJwt<T>(token, this.accessTokenSecret, {
+      ignoreExpiration: false,
+    });
+
+    return decodedData ? decodedData : null;
+  }
+
+  public verifyRefreshToken<T extends IJwtVerifyPayload>(
+    token: string,
+  ): T | null {
+    const decodedData = verifyJwt<T>(token, this.refreshTokenSecret, {
+      ignoreExpiration: false,
+    });
+
+    return decodedData ? decodedData : null;
   }
 }

@@ -12,6 +12,8 @@ import { AuthRegisterDtoRequest } from './dto/auth.register.dto';
 import { AuthRegisterDtoResponse } from './dto/auth.register.response.dto';
 import { JwtService } from 'src/common/jwtService/jwt.service';
 import { AuthLoginDtoResponse } from './dto/auth.login.response.dto';
+import { Request, Response } from 'express';
+import { IJwtVerifyPayload } from 'src/common/jwtService/interface/jwt.verify.payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -78,4 +80,6 @@ export class AuthService {
 
     return createdPerson.toResponse();
   }
+
+  async refresh(person: IJwtVerifyPayload) {}
 }
