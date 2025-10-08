@@ -25,4 +25,7 @@ export class AuthController {
   ): Promise<AuthLoginDtoResponse> {
     return this.authService.login(dto);
   }
+
+  // @Post('refresh')
+  // public async refresh(): Promise<void> {}
 }
